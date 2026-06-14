@@ -1,6 +1,6 @@
 # cpp_taisia
 A simple girlfriend AI project ib C++. Implemented via llama_cpp
-# README — LlamaTest (консольный чат с LLM)
+# консольный чат с LLM
 
 Проект представляет собой консольное приложение на C++, которое использует библиотеку [llama.cpp](https://github.com/ggerganov/llama.cpp) для запуска языковой модели в формате GGUF. Приложение поддерживает диалог с моделью, сохраняет историю переписки в JSONL-файл и корректно работает с русским языком в Windows.
 
