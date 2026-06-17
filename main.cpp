@@ -2,8 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <vector>
-#include <cstring>
 #include "nlohmann/json.hpp"
 
 #ifdef _WIN32
@@ -47,9 +47,9 @@ void app_histary(string filename, string prompt, string respone) {
     };
     ofstream file(filename, ios::app);
     if (file.is_open()) {
-        file << resp.dump() << "/n";
+        file << resp.dump() << "\n";
         file.close();
-    } 
+    }
     else {
         cerr << "Не удалось открыть файл" << endl;
     }
@@ -57,10 +57,10 @@ void app_histary(string filename, string prompt, string respone) {
 
 int main() {
     // Устанавливаем UTF-8 кодировку для консоли Windows
-    #ifdef _WIN32
+#ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8);  // Вывод в UTF-8
     SetConsoleCP(CP_UTF8);        // Ввод в UTF-8 (ИСПРАВЛЕНИЕ!)
-    #endif
+#endif
     // Отключаем debug-логи CUDA
     llama_log_set([](ggml_log_level level, const char* text, void* user_data) {
         if (level >= GGML_LOG_LEVEL_INFO) {  // Показываем только важные сообщения
@@ -69,7 +69,21 @@ int main() {
         }, nullptr);
 
     string model_path = "C:/Users/SiIvSe/.lmstudio/models/bartowski/cognitivecomputations_Dolphin-Mistral-24B-Venice-Edition-GGUF/cognitivecomputations_Dolphin-Mistral-24B-Venice-Edition-Q4_K_M.gguf";
-    string prompt = "Привет! Напиши код на C++, который будет записывать переменую в текстовый документ.";
+    string sys_p = "";
+    ifstream file2("C:/LLM_CPP/prompt.txt");
+    if (file2.is_open()) {
+        ostringstream ss;
+        ss << file2.rdbuf(); // читаем весь файл
+        sys_p = ss.str(); // всё содержимое тут
+        file2.close();
+        cout << "Промпт загрузилася" << endl;
+    }
+
+    else {
+        sys_p = "Ты таисия - добрая ии подруга!";
+        cout << "Файл не удалось загрущзить" << endl;
+    }
+
     int n_predict = 1024;
 
     llama_backend_init();
@@ -97,7 +111,7 @@ int main() {
     }
     for (int j = 0; j < 100; j++) {
         // Токенизация
-        cout << "__________________________________________________________________________________________________________________________" << endl;
+        cout << "____________________________________________________________________________" << endl;
         cout << "Ввод: ";
         string prompt;
         getline(cin, prompt);
@@ -106,7 +120,7 @@ int main() {
         if (prompt.empty()) continue;
 
         //ФОРМАТ С СИСТЕМНЫМ ПРОМПТОМ
-        string system_prompt = "Ты — Таисия, дружелюбный помощник. Отвечай на вопросы пользователя по существу, не выдумывай лишнего.";
+        string system_prompt = sys_p;
         string formatted_prompt = "[INST] " + system_prompt + "\n\nПользователь: " + prompt + " [/INST]";
 
         vector<llama_token> tokens = tokenize(ctx, formatted_prompt, true);
@@ -128,7 +142,7 @@ int main() {
         cout << "Запрос: " << prompt << "\n\nОтвет модели:\n";
 
         // Генерация ответа
-        vector<string> answer = {"Модель: "};
+        vector<string> answer = { "Модель: " };
         for (int i = 0; i < n_predict; i++) {
             llama_token new_token = llama_sampler_sample(sampler, ctx, -1);
 
@@ -155,7 +169,6 @@ int main() {
 
 
         llama_sampler_free(sampler);
-        cout << "__________________________________________________________________________________________________________________________" << endl;
     }
     llama_free(ctx);
     llama_free_model(model);
